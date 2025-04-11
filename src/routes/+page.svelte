@@ -22,7 +22,7 @@
                   const res = await fetch('/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount: '9.99', email: 'h22tswift13@gmail.com' })
+                    body: JSON.stringify({ amount: '9.99', email: 'harshamarri18+sandbox@gmail.com' })
                   });
                   const data = await res.json();
                   return data.id; // Order ID
