@@ -32,8 +32,8 @@
                   //alert(`Transaction completed by ${details.payer.name.given_name}`);
                 },
                 onError: (err) => {
-                  console.error(err);
-                  errorMessage = 'Something went wrong.';
+                    console.error('Payment error:', err); // <-- this will show the full error
+                    errorMessage = err.message || JSON.stringify(err); // Optional: show the message to user
                 }
               }).render('#paypal-button-container');
             }
