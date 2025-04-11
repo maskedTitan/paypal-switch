@@ -4,6 +4,8 @@ export async function POST({ request }) {
   const body = await request.json();
   const accessToken = await getAccessToken();
   const baseUrl = request.headers.get('origin') ?? 'http://localhost:5173';
+  const sessionId = crypto.randomUUID(); // or use body.sessionId if you have it
+  console.log(sessionId);
   const orderPayload = {
     intent: 'CAPTURE',
     payment_source: {
@@ -11,8 +13,8 @@ export async function POST({ request }) {
         email_address: body.email,
         experience_context: {
           user_action: 'PAY_NOW',
-          return_url: `${baseUrl}/success`,
-          cancel_url: `${baseUrl}/success`,
+          return_url: `${baseUrl}/success?session_id=${sessionId}`,
+          cancel_url: `${baseUrl}/success?session_id=${sessionId}`,
           app_switch_preference: {
             launch_paypal_app: true
           }
