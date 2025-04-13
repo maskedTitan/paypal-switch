@@ -1,47 +1,57 @@
 <script>
-        import { onMount } from 'svelte';
-        import { loadScript } from '@paypal/paypal-js';
-      
-        let isLoaded = false;
-        let errorMessage = '';
-      
-        onMount(async () => {
-          try {
-            const paypal = await loadScript({
-              clientId: 'AQD1grlR1Aiy7WMw6eo8VGEkQT_FW0dj3QEni0Vcgk7ybUYvAd6iuC14Fw6TKnXyyGG1d_LcQ3rZhZTi', // dummy here, real client ID not needed due to server call
-              currency: 'USD',
-              intent: 'capture'
+  import { onMount } from "svelte";
+  import { loadScript } from "@paypal/paypal-js";
+
+  let isLoaded = false;
+  let errorMessage = "";
+
+  onMount(async () => {
+    try {
+      const paypalSDK = await loadScript({
+        clientId:
+          "AQD1grlR1Aiy7WMw6eo8VGEkQT_FW0dj3QEni0Vcgk7ybUYvAd6iuC14Fw6TKnXyyGG1d_LcQ3rZhZTi",
+        currency: "USD",
+        intent: "capture"
+      });
+
+      if (paypalSDK) {
+        const buttons = paypalSDK.Buttons({
+          appSwitchWhenAvailable: true, // Enable App Switch feature
+          createOrder: async function () {
+            // Call your API to create the order and return the order ID
+            const response = await fetch("/", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                amount: "9.99",
+                email: "harshamarri18+sandbox@gmail.com"
+              })
             });
-      
-            if (paypal) {
-              isLoaded = true;
-      
-              paypal.Buttons({
-                appSwitchWhenAvailable: true,
-                createOrder: async () => {
-                  const res = await fetch('/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount: '9.99', email: 'harshamarri18+sandbox@gmail.com' })
-                  });
-                  const data = await res.json();
-                  return data.id; // Order ID
-                },
-                onApprove: async (data, actions) => {
-                  const details = await actions.order.capture();
-                  //alert(`Transaction completed by ${details.payer.name.given_name}`);
-                },
-                onError: (err) => {
-                    console.error('Payment error:', err); // <-- this will show the full error
-                    errorMessage = err.message || JSON.stringify(err); // Optional: show the message to user
-                }
-              }).render('#paypal-button-container');
-            }
-          } catch (err) {
-            console.error('PayPal load failed:', err);
-            errorMessage = 'Failed to load PayPal.';
+            const data = await response.json();
+            return data.id;
+          },
+          onApprove: async function (data, actions) {
+            await actions.order.capture();
+          },
+          onError: function (err) {
+            console.error("Payment error:", err);
+            errorMessage = err.message || JSON.stringify(err);
           }
         });
+
+        // If the buyer has returned from an App Switch flow, resume the flow
+        if (buttons.hasReturned()) {
+          buttons.resume();
+        } else {
+          buttons.render("#paypal-button-container");
+        }
+        isLoaded = true;
+      }
+    } catch (err) {
+      console.error("PayPal load failed:", err);
+      errorMessage = "Failed to load PayPal.";
+    }
+  });
       </script>
       
       <div class="flex flex-col items-center justify-center min-h-screen p-6 bg-gray-100">
